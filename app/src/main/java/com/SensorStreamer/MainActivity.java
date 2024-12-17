@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         audioListen = (AudioListen) audioListenF.create(this);
         SensorListListenF sensorListListenF = new SensorListListenF();
         sensorListListen = (SensorListListen) sensorListListenF.create(this);
+        videoListen = new VideoListen(MainActivity.this);
 
         accelerometerListen = new AccelerometerListen(this);
         gyroscopeListen = new GyroscopeListen(this);
@@ -361,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         //暂停读取audioListen.startRead();
 
         String[] params = {};
-        VideoListen videoListen = new VideoListen(MainActivity.this);
+
         videoListen.launch(params,this.videoCallback);
 
         videoListen.startRead();
@@ -386,6 +387,8 @@ public class MainActivity extends AppCompatActivity {
         audioListen.stopRead();
         sensorListListen.off();
         audioListen.off();
+        videoListen.stopRead();
+        videoListen.off();
     }
 
     /**

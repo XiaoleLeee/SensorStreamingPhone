@@ -120,15 +120,17 @@ public class VideoListen extends Listen {
         if (!this.canOff())
             return false;
 
-        if (this.cameraProvider != null) {
-            this.cameraProvider.unbindAll();
-            this.cameraProvider = null;
-        }
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (this.cameraProvider != null) {
+                this.cameraProvider.unbindAll();
+                this.cameraProvider = null;
+            }
 
-        if (this.cameraExecutor != null && !this.cameraExecutor.isShutdown()) {
-            this.cameraExecutor.shutdown();
-            this.cameraExecutor = null;
-        }
+            if (this.cameraExecutor != null && !this.cameraExecutor.isShutdown()) {
+                this.cameraExecutor.shutdown();
+                this.cameraExecutor = null;
+            }
+        });
 
         this.imageAnalysis = null;
         this.callback = null;
@@ -171,6 +173,8 @@ public class VideoListen extends Listen {
                 + " bytes.length= " + (compressedBytes.length / 1024) + "KB"
                 + " quality= " + quality);
 
+        if (this.callback == null)
+            return;
         this.callback.dealVideoData(compressedBytes);
     }
 
@@ -255,13 +259,15 @@ public class VideoListen extends Listen {
     public synchronized void stopRead() {
         if (!this.canStopRead()) return;
 
-        if (this.readThread != null && this.readThread.isAlive()) {
-            this.readThread.interrupt();
-            this.readThread = null;
-        }
+//        if (this.readThread != null && this.readThread.isAlive()) {
+//            this.readThread.interrupt();
+//            this.readThread = null;
+//        }
 
         if (this.cameraProvider != null) {
-            this.cameraProvider.unbindAll();
+            new Handler(Looper.getMainLooper()).post(() -> {
+                this.cameraProvider.unbindAll();
+            });
         }
         this.startFlag = false;
     }
