@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Sensor Streamer</string>
+
+    <string name="button_connect">Connect</string>
+    <string name="button_disconnect">Disconnect</string>
+    <string name="text_IP_default">192.168.51.222</string>
+
+    <string name="text_info_default">Be Ready</string>
+    <string name="text_info_connected">Connected</string>
+    <string name="text_info_fail">Connect Fail</string>
+    <string name="text_info_streaming">Streaming</string>
+    <string name="text_info_break">Connect Break</string>
+
+
+</resources>
