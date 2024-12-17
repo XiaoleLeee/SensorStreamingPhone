@@ -34,8 +34,12 @@ import com.SensorStreamer.Component.Net.RLink.RLinkF;
 import com.SensorStreamer.Component.Time.ReferenceTimeF;
 import com.SensorStreamer.Component.Time.Time;
 import com.SensorStreamer.Component.Time.TimeF;
+import com.SensorStreamer.Model.Listen.Control.AudioControl;
+import com.SensorStreamer.Model.Listen.Control.SensorControl;
+import com.SensorStreamer.Model.Listen.Control.VideoControl;
 import com.SensorStreamer.Model.Listen.Data.VideoData;
 import com.SensorStreamer.Model.Switch.RemotePDU;
+import com.SensorStreamer.Utils.TypeTranDeter;
 import com.SensorStreamer.databinding.ActivityMainBinding;
 import com.google.gson.Gson;
 
@@ -196,7 +200,17 @@ public class MainActivity extends AppCompatActivity {
      * 启动传感器
      * */
     public void launchSensor(String[] dataList) {
-        videoListen.launch(null, this.videoCallback);
+        VideoControl videoControl = null;
+
+        for (String data : dataList) {
+            if (TypeTranDeter.canStr2JsonData(data, VideoControl.class) && VideoControl.TYPE.equals(gson.fromJson(data, VideoControl.class).type))
+                videoControl = gson.fromJson(data, VideoControl.class);
+        }
+
+        if (videoControl == null || videoControl.sampling == 0)
+            videoListen.launch(null, this.videoCallback);
+        else
+            videoListen.launch(new String[]{Integer.toString(videoControl.sampling)}, this.videoCallback);
         videoListen.startRead();
     }
 

@@ -60,6 +60,10 @@ public class VideoListen extends Listen {
         synchronized (this.launchLock) {
             if (!this.canLaunch())
                 return false;
+
+            if (params == null || params.length == 0)
+                return false;
+
             try {
                 this.callback = (VideoCallback) callback;
                 this.cameraExecutor = Executors.newSingleThreadExecutor();
