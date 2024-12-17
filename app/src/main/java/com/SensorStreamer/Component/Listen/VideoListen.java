@@ -4,32 +4,18 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.media.AudioRecord;
 
-import android.Manifest;
-import android.content.Context;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.Size;
-import android.view.Surface;
-import android.view.TextureView;
-import androidx.annotation.NonNull;
+
 import androidx.camera.core.AspectRatio;
-import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.video.Quality;
-import androidx.camera.video.Recorder;
-import androidx.camera.video.Recording;
-import androidx.camera.video.VideoCapture;
-import androidx.camera.video.VideoOutput;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
@@ -39,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VideoListen extends Listen {
 
@@ -76,7 +63,7 @@ public class VideoListen extends Listen {
             try {
                 this.callback = (VideoCallback) callback;
                 this.cameraExecutor = Executors.newSingleThreadExecutor();
-
+                AtomicBoolean futureFlag = new AtomicBoolean(false);
                 ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(activity);
                 future.addListener(() -> {
                     try {
@@ -99,12 +86,15 @@ public class VideoListen extends Listen {
                     } finally {
                         synchronized (this.launchLock) {
                             this.launchLock.notifyAll();
+                            futureFlag.set(true);
                         }
                     }
 
                 }, ContextCompat.getMainExecutor(activity));
 
-                this.launchLock.wait();
+                if (!futureFlag.get())
+                    this.launchLock.wait(5000);
+                futureFlag.set(false);
                 return true;
             } catch (Exception e) {
                 Log.e("VideoListen", "启动失败", e);
@@ -211,58 +201,12 @@ public class VideoListen extends Listen {
             }
         });
 
-//        this.readThread = new Thread(() -> {
-//            try {
-//                // 切换到主线程执行相机操作
-//                new Handler(Looper.getMainLooper()).post(() -> {
-//                    try {
-//                        this.imageAnalysis.setAnalyzer(this.cameraExecutor, image -> {
-//                            compressImage(image,10);
-//                            image.close();
-//                        });
-//
-//                        this.cameraProvider.bindToLifecycle(
-//                                (LifecycleOwner) activity, this.cameraSelector, this.imageAnalysis
-//                        );
-//                        this.startFlag = true;
-//                    } catch (Exception e) {
-//                        Log.e("VideoListen", "相机操作失败", e);
-//                        stopRead();
-//                    }
-//                });
-//            } catch (Exception e) {
-//                Log.e("VideoListen", "读取失败", e);
-//                stopRead();
-//            }
-//        });
-//        this.readThread.start();
-    }
-    private Bitmap rotateBitmap(Bitmap origin, float alpha) {
-        if (origin == null) {
-            return null;
-        }
-        int width = origin.getWidth();
-        int height = origin.getHeight();
-        Matrix matrix = new Matrix();
-        matrix.setRotate(alpha);
-        // 围绕原地进行旋转
-        Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
-        if (newBM.equals(origin)) {
-            return newBM;
-        }
-        origin.recycle();
-        return newBM;
     }
 
     // 停止读取线程
     @Override
     public synchronized void stopRead() {
         if (!this.canStopRead()) return;
-
-//        if (this.readThread != null && this.readThread.isAlive()) {
-//            this.readThread.interrupt();
-//            this.readThread = null;
-//        }
 
         if (this.cameraProvider != null) {
             new Handler(Looper.getMainLooper()).post(() -> {

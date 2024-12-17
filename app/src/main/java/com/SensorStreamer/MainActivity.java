@@ -316,77 +316,14 @@ public class MainActivity extends AppCompatActivity {
      * 启动传感器
      * */
     public void launchSensor(String[] dataList) {
-        AudioControl audioControl = null;
-        SensorControl sensorControl = null;
-
-//        int[] defaultSensors = new int[] {
-//                Sensor.TYPE_ACCELEROMETER,
-//                Sensor.TYPE_GYROSCOPE,
-//                Sensor.TYPE_ROTATION_VECTOR,
-//                Sensor.TYPE_MAGNETIC_FIELD,
-//        };
-        int audioDefaultSampling = 16000;
-
-        for (String data : dataList) {
-            if (TypeTranDeter.canStr2JsonData(data, AudioControl.class) && AudioControl.TYPE.equals(gson.fromJson(data, AudioControl.class).type))
-                audioControl = gson.fromJson(data, AudioControl.class);
-            if (TypeTranDeter.canStr2JsonData(data, SensorControl.class) && SensorControl.TYPE.equals(gson.fromJson(data, SensorControl.class).type))
-                sensorControl = gson.fromJson(data, SensorControl.class);
-        }
-
-//            启动相关组件
-//        if (sensorControl == null || sensorControl.sensors == null)
-//            sensorListListen.launch(defaultSensors,0 ,this.sensorListCallback);
-//        else
-//            sensorListListen.launch(sensorControl.sensors, sensorControl.sampling, this.sensorListCallback);
-//        if (sensorControl == null || sensorControl.sensors == null) {
-//            sensorCommandManger.executeAllLaunchCommand(sensorCallback);
-//        } else {
-//            for (int sensorType : sensorControl.sensors) {
-////                SensorListen sensorListen = this.sensorListenDict.getOrDefault(sensorType, null);
-////                if (sensorListen == null)
-////                    continue;
-////                sensorListen.launch(null, this.sensorCallback);
-////                sensorListen.startRead();
-//                sensorCommandManger.executeLaunchCommand(sensorType, sensorCallback);
-//            }
-//        }
-
-//        if (audioControl == null)
-//            audioListen.launch(audioDefaultSampling, this.audioCallback);
-//        else
-//            audioListen.launch(audioControl.sampling, this.audioCallback);
-
-//            开始读取数据
-//        sensorListListen.startRead();
-        //暂停读取audioListen.startRead();
-
-        String[] params = {};
-
-        videoListen.launch(params,this.videoCallback);
-
+        videoListen.launch(null, this.videoCallback);
         videoListen.startRead();
-
-//        if (videoListen.launch(params,this.videoCallback)) {
-//            videoListen.startRead();
-//        } else {
-//            Log.e("MainActivity", "视频监听器启动失败");
-//        }
     }
 
     /**
      * 关闭传感器
      * */
     public void offSensor() {
-//        for(SensorListen listen : this.sensorListenDict.values()) {
-//            listen.stopRead();
-//            listen.off();
-//        }
-        sensorCommandManger.executeAllOffCommand();
-        sensorListListen.stopRead();
-        audioListen.stopRead();
-        sensorListListen.off();
-        audioListen.off();
         videoListen.stopRead();
         videoListen.off();
     }
