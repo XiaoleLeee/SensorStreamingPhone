@@ -7,7 +7,7 @@ package com.SensorStreamer.Model.Listen.Control;
  * */
 
 public class AudioControl extends TypeControl {
-    public static final String TYPE = "AudioControl";
+    public static final String TYPE = "AUDIO";
 
     /**
      * @param sampling 采样率

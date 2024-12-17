@@ -7,7 +7,7 @@ package com.SensorStreamer.Model.Listen.Control;
  * */
 
 public class SensorControl extends TypeControl {
-    public static final String TYPE = "SensorControl";
+    public static final String TYPE = "SENSOR";
     public int[] sensors;
 
     /**

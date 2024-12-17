@@ -4,50 +4,26 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
-//import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.video.Quality;
-import androidx.camera.video.QualitySelector;
-import androidx.camera.video.Recorder;
-import androidx.camera.video.VideoCapture;
-import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.SensorStreamer.Command.SensorCommand.SensorCommandManger;
-import com.SensorStreamer.Component.Listen.SensorListen.AccelerometerListen;
-import com.SensorStreamer.Component.Listen.SensorListen.GyroscopeListen;
-import com.SensorStreamer.Component.Listen.SensorListen.MagneticFieldListen;
-import com.SensorStreamer.Component.Listen.SensorListen.RotationVectorListen;
-import com.SensorStreamer.Component.Listen.SensorListen.SensorListen;
 import com.SensorStreamer.Component.Listen.VideoListen;
 import com.SensorStreamer.Component.Net.Link.Link;
 import com.SensorStreamer.Component.Net.Link.LinkF;
 import com.SensorStreamer.Component.Net.RLink.NRLink.NRLink;
 import com.SensorStreamer.Component.Net.Link.TCPLink.TCPLinkF;
 import com.SensorStreamer.Component.Net.Link.UDPLink.UDPLinkF;
-import com.SensorStreamer.Component.Listen.AudioListen;
-import com.SensorStreamer.Component.Listen.AudioListenF;
-import com.SensorStreamer.Component.Listen.SensorListListen;
-import com.SensorStreamer.Component.Listen.SensorListListenF;
 import com.SensorStreamer.Component.Switch.RemoteSwitch;
 import com.SensorStreamer.Component.Switch.RemoteSwitchF;
 import com.SensorStreamer.Component.Switch.Switch;
@@ -58,21 +34,14 @@ import com.SensorStreamer.Component.Net.RLink.RLinkF;
 import com.SensorStreamer.Component.Time.ReferenceTimeF;
 import com.SensorStreamer.Component.Time.Time;
 import com.SensorStreamer.Component.Time.TimeF;
-import com.SensorStreamer.Model.Listen.Control.AudioControl;
-import com.SensorStreamer.Model.Listen.Data.AudioData;
-import com.SensorStreamer.Model.Listen.Control.SensorControl;
-import com.SensorStreamer.Model.Listen.Data.SensorData;
 import com.SensorStreamer.Model.Listen.Data.VideoData;
 import com.SensorStreamer.Model.Switch.RemotePDU;
-import com.SensorStreamer.Utils.TypeTranDeter;
 import com.SensorStreamer.databinding.ActivityMainBinding;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -81,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MainActivity";
     private TextView ipText;
     private TextView infoText;
-    private final int udpPort = 5005;
-    private final int tcpPort = 5006;
+    private final int udpPort = 5007;
+    private final int tcpPort = 5008;
 //    用于向主线程发送信息，可用于更新 UI
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -94,18 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private HeartBeat rLinkHeartBeat;
 
 //    监视器
-    private AudioListen audioListen;
     private VideoListen videoListen;
-    private SensorListListen sensorListListen;
-//    sensor 命令管理器
-    private SensorCommandManger sensorCommandManger;
-
-    private AccelerometerListen accelerometerListen;
-    private GyroscopeListen gyroscopeListen;
-    private MagneticFieldListen magneticFieldListen;
-    private RotationVectorListen rotationVectorListen;
-//    类型与监视器类的字典
-    private final HashMap<Integer, SensorListen> sensorListenDict = new HashMap<>();
 
 //    获取基准时间
     private Time referenceTime;
@@ -116,17 +74,6 @@ public class MainActivity extends AppCompatActivity {
     private PowerManager powerManager;
 //    通知服务
     private Intent sensorServiceIntent;
-
-
-    //摄像头服务
-    private PreviewView previewView;
-    private Button startRecordingButton, stopRecordingButton;
-
-    private ProcessCameraProvider cameraProvider;
-    private CameraSelector cameraSelector;
-    private Preview preview;
-    private VideoCapture<Recorder> videoCapture;
-
 
     //    动态获取服务权限
     private final static int REQUEST_CODE_ANDROID = 1001;
@@ -194,23 +141,7 @@ public class MainActivity extends AppCompatActivity {
         rLink = (NRLink) rLinkF.create();
         rLinkHeartBeat = new HeartBeat(rLink, heartBeatCallback);
 
-        AudioListenF audioListenF = new AudioListenF();
-        audioListen = (AudioListen) audioListenF.create(this);
-        SensorListListenF sensorListListenF = new SensorListListenF();
-        sensorListListen = (SensorListListen) sensorListListenF.create(this);
         videoListen = new VideoListen(MainActivity.this);
-
-        accelerometerListen = new AccelerometerListen(this);
-        gyroscopeListen = new GyroscopeListen(this);
-        magneticFieldListen = new MagneticFieldListen(this);
-        rotationVectorListen = new RotationVectorListen(this);
-
-        sensorListenDict.put(Sensor.TYPE_ACCELEROMETER, accelerometerListen);
-        sensorListenDict.put(Sensor.TYPE_GYROSCOPE, gyroscopeListen);
-        sensorListenDict.put(Sensor.TYPE_MAGNETIC_FIELD, magneticFieldListen);
-        sensorListenDict.put(Sensor.TYPE_ROTATION_VECTOR, rotationVectorListen);
-
-        sensorCommandManger = new SensorCommandManger(this);
 
 //        创建远程开关
         SwitchF remoteSwitchF = new RemoteSwitchF();
@@ -243,23 +174,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 音频回调函数
-     * */
-    private final AudioListen.AudioCallback audioCallback = new AudioListen.AudioCallback () {
-        @Override
-        public void dealAudioData(byte[] data) {
-            AudioData audioData = new AudioData(referenceTime.getTime(), data);
-            String json = gson.toJson(audioData);
-//            发送数据
-            try {
-                udpLink.send(json);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "dealAudioData:Exception", e);
-            }
-        }
-    };
-
-    /**
      * 视频回调函数
      * */
     private final VideoListen.VideoCallback videoCallback = new VideoListen.VideoCallback () {
@@ -274,40 +188,6 @@ public class MainActivity extends AppCompatActivity {
                 udpLink.send(json);
             } catch (Exception e) {
                 Log.e("udpLinkError", "dealAudioData:Exception", e);
-            }
-        }
-    };
-
-    /**
-     * SensorList 回调函数
-     * */
-    private final SensorListListen.SensorListCallback sensorListCallback = new SensorListListen.SensorListCallback() {
-        @Override
-        public void dealSensorData(String sensorType, float[] data, long sensorTimestamp) {
-            SensorData sensorData = new SensorData(sensorType, referenceTime.getTime(), sensorTimestamp, data);
-            String json = gson.toJson(sensorData);
-//            发送数据
-            try {
-                udpLink.send(json);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "dealSensorData:Exception", e);
-            }
-        }
-    };
-
-    /**
-     * Sensor 回调函数
-     * */
-    private final SensorListen.SensorCallback sensorCallback = new SensorListen.SensorCallback() {
-        @Override
-        public void dealSensorData(String sensorType, float[] data, long sensorTimestamp) {
-            SensorData sensorData = new SensorData(sensorType, referenceTime.getTime(), sensorTimestamp, data);
-            String json = gson.toJson(sensorData);
-//            发送数据
-            try {
-                udpLink.send(json);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "dealSensorData:Exception", e);
             }
         }
     };
@@ -375,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
                 tcpRemoteSwitch.startListen(1024);
 //                添加心跳
                 rLink.addReuseName(HeartBeat.LOG_TAG);
-                rLinkHeartBeat.startHeartbeat(2000, 3, 2000);;
+                rLinkHeartBeat.startHeartbeat(2000, 3, 2000);
 //                启动远程开关
                 startForegroundService(MainActivity.this.sensorServiceIntent.setAction(SensorService.ACTION_START_FORE));
             } catch (Exception e) {

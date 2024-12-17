@@ -86,6 +86,7 @@ public class RemoteSwitch extends Switch {
                     if (!this.link.canRece())
                         break;
                     String msg = this.link.structRece(bufSize, Link.INTNULL, LOG_TAG);
+                    System.out.println(msg);
 //                    信息格式确认
                     if (!TypeTranDeter.canStr2JsonData(msg, RemotePDU.class))
                         continue;

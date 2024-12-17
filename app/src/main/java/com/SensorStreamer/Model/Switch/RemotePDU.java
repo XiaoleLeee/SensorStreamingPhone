@@ -14,18 +14,18 @@ public class RemotePDU {
      * control 控制信息，
      * data 子控制信息（如控制要使用的传感器类型）
      * */
-    public final static String TYPE_CONTROL = "type_control";
+    public final static String TYPE_CONTROL = "TYPE_CONTROL";
     /**
      * 同步报文：
      * time 发送方时间戳，
      * control null，
      * data null
      * */
-    public final static String TYPE_SYN = "type_syn";
-    public final static String TYPE_MSG = "type_msg";
+    public final static String TYPE_SYN = "TYPE_SYN";
+    public final static String TYPE_MSG = "TYPE_MSG";
 
-    public final static String CONTROL_SWITCHON = "control_switchOn";
-    public final static String CONTROL_SWITCHOFF = "control_switchOff";
+    public final static String CONTROL_SWITCHON = "CONTROL_SWITCH_ON";
+    public final static String CONTROL_SWITCHOFF = "CONTROL_SWITCH_OFF";
 
 //    信息类型
     public String type;

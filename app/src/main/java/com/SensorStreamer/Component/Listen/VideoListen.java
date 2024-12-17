@@ -79,7 +79,6 @@ public class VideoListen extends Listen {
                                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                                 .build();
                         this.launchFlag = true;
-                        System.out.println("Launch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     } catch (Exception e) {
                         Log.e("VideoListen", "启动失败", e);
                         this.off();
@@ -171,16 +170,12 @@ public class VideoListen extends Listen {
     // 启动读取线程
     @Override
     public synchronized void startRead() {
-
-        System.out.println("Start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         if (!this.canStartRead()) {
-            System.out.println("StartError!!!!!!!!!!!!!!!!!!!!!!");
             return;
         }
 
 
         if (cameraProvider == null || imageAnalysis == null) {
-            Log.d("udpSend","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             return;
         }
 
