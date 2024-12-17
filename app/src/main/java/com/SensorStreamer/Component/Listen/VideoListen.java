@@ -57,50 +57,68 @@ public class VideoListen extends Listen {
     private int width=640,height=480 ;
     private VideoCallback callback;              // 回调接口
     private Thread readThread;                   // 持续监听线程
+    private final Object launchLock;
 
     // 构造函数
     public VideoListen(Activity activity) {
         super(activity);
         this.intNull = 0;
+        this.launchLock = new Object();
         this.cameraExecutor = Executors.newSingleThreadExecutor();
     }
 
     // 初始化相机组件
     @Override
     public synchronized boolean launch(String[] params, ListenCallback callback) {
-        //0 0
-        if (!this.canLaunch()) return false;
-
-        this.callback = (VideoCallback) callback;
-        this.cameraExecutor = Executors.newSingleThreadExecutor();
-
-        ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(activity);
-        future.addListener(() -> {
+        synchronized (this.launchLock) {
+            if (!this.canLaunch())
+                return false;
             try {
-                this.cameraProvider = future.get();
+                this.callback = (VideoCallback) callback;
+                this.cameraExecutor = Executors.newSingleThreadExecutor();
 
-                this.cameraSelector = new CameraSelector.Builder()
-                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                        .build();
+                ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(activity);
+                future.addListener(() -> {
+                    try {
+                        this.cameraProvider = future.get();
 
-                this.imageAnalysis = new ImageAnalysis.Builder()
-                        .setTargetAspectRatio(AspectRatio.RATIO_4_3)  // 设置目标分辨率
-                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
-                this.launchFlag = true;
+                        this.cameraSelector = new CameraSelector.Builder()
+                                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                                .build();
+
+                        this.imageAnalysis = new ImageAnalysis.Builder()
+                                .setTargetAspectRatio(AspectRatio.RATIO_4_3)  // 设置目标分辨率
+                                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build();
+                        this.launchFlag = true;
+                        System.out.println("Launch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    } catch (Exception e) {
+                        Log.e("VideoListen", "启动失败", e);
+                        this.off();
+                    } finally {
+                        synchronized (this.launchLock) {
+                            this.launchLock.notifyAll();
+                        }
+                    }
+
+                }, ContextCompat.getMainExecutor(activity));
+
+                this.launchLock.wait();
+                return true;
             } catch (Exception e) {
                 Log.e("VideoListen", "启动失败", e);
                 this.off();
+                return false;
             }
-        }, ContextCompat.getMainExecutor(activity));
-        return true;
+        }
     }
 
     // 注销组件
     @Override
     public synchronized boolean off() {
-        if (!this.canOff()) return false;
+        if (!this.canOff())
+            return false;
 
         if (this.cameraProvider != null) {
             this.cameraProvider.unbindAll();
@@ -159,33 +177,61 @@ public class VideoListen extends Listen {
     // 启动读取线程
     @Override
     public synchronized void startRead() {
-        if (!this.canStartRead() || cameraProvider == null || imageAnalysis == null) return;
 
-        this.readThread = new Thread(() -> {
+        System.out.println("Start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        if (!this.canStartRead()) {
+            System.out.println("StartError!!!!!!!!!!!!!!!!!!!!!!");
+            return;
+        }
+
+
+        if (cameraProvider == null || imageAnalysis == null) {
+            Log.d("udpSend","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            return;
+        }
+
+        new Handler(Looper.getMainLooper()).post(() -> {
             try {
-                // 切换到主线程执行相机操作
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    try {
-                        this.imageAnalysis.setAnalyzer(this.cameraExecutor, image -> {
-                            compressImage(image,10);
-                            image.close();
-                        });
-
-                        this.cameraProvider.bindToLifecycle(
-                                (LifecycleOwner) activity, this.cameraSelector, this.imageAnalysis
-                        );
-                        this.startFlag = true;
-                    } catch (Exception e) {
-                        Log.e("VideoListen", "相机操作失败", e);
-                        stopRead();
-                    }
+                this.imageAnalysis.setAnalyzer(this.cameraExecutor, image -> {
+                    compressImage(image, 10);
+                    image.close();
                 });
+
+                this.cameraProvider.bindToLifecycle(
+                        (LifecycleOwner) activity, this.cameraSelector, this.imageAnalysis
+                );
+                this.startFlag = true;
             } catch (Exception e) {
-                Log.e("VideoListen", "读取失败", e);
+                Log.e("VideoListen", "相机操作失败", e);
                 stopRead();
             }
         });
-        this.readThread.start();
+
+//        this.readThread = new Thread(() -> {
+//            try {
+//                // 切换到主线程执行相机操作
+//                new Handler(Looper.getMainLooper()).post(() -> {
+//                    try {
+//                        this.imageAnalysis.setAnalyzer(this.cameraExecutor, image -> {
+//                            compressImage(image,10);
+//                            image.close();
+//                        });
+//
+//                        this.cameraProvider.bindToLifecycle(
+//                                (LifecycleOwner) activity, this.cameraSelector, this.imageAnalysis
+//                        );
+//                        this.startFlag = true;
+//                    } catch (Exception e) {
+//                        Log.e("VideoListen", "相机操作失败", e);
+//                        stopRead();
+//                    }
+//                });
+//            } catch (Exception e) {
+//                Log.e("VideoListen", "读取失败", e);
+//                stopRead();
+//            }
+//        });
+//        this.readThread.start();
     }
     private Bitmap rotateBitmap(Bitmap origin, float alpha) {
         if (origin == null) {

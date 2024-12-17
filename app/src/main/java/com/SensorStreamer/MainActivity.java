@@ -11,18 +11,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+//import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.video.Quality;
+import androidx.camera.video.QualitySelector;
 import androidx.camera.video.Recorder;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.SensorStreamer.Command.SensorCommand.SensorCommandManger;
@@ -59,6 +66,7 @@ import com.SensorStreamer.Model.Listen.Data.VideoData;
 import com.SensorStreamer.Model.Switch.RemotePDU;
 import com.SensorStreamer.Utils.TypeTranDeter;
 import com.SensorStreamer.databinding.ActivityMainBinding;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
 
 import java.net.InetAddress;
