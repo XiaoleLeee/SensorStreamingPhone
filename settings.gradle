@@ -6,5 +6,5 @@ dependencyResolutionManagement {
         //jcenter() // Warning: this repository is going to shut down soon
     }
 }
-rootProject.name = "Sensor Streamer WearOS"
+rootProject.name = "Sensor Streamer Phone"
 include ':app'
