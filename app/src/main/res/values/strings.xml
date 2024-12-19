@@ -6,6 +6,7 @@
     <string name="text_IP_default">192.168.1.101</string>
 
     <string name="text_info_default">Be Ready</string>
+    <string name="text_info_connecting">Connecting</string>
     <string name="text_info_connected">Connected</string>
     <string name="text_info_fail">Connect Fail</string>
     <string name="text_info_streaming">Streaming</string>

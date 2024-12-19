@@ -39,6 +39,7 @@ import com.SensorStreamer.Model.Listen.Control.SensorControl;
 import com.SensorStreamer.Model.Listen.Control.VideoControl;
 import com.SensorStreamer.Model.Listen.Data.VideoData;
 import com.SensorStreamer.Model.Switch.RemotePDU;
+import com.SensorStreamer.Utils.PatternMatch;
 import com.SensorStreamer.Utils.TypeTranDeter;
 import com.SensorStreamer.databinding.ActivityMainBinding;
 import com.google.gson.Gson;
@@ -254,8 +255,12 @@ public class MainActivity extends AppCompatActivity {
 //        启动通知
         new Thread(() -> {
             try {
+                //                检验 IP 格式
+                String aimIPString = ipText.getText().toString();
+                if (!PatternMatch.ipv4SimpleMatch(aimIPString))
+                    aimIPString = null;
 //                获取目标 IP
-                InetAddress aimIP = InetAddress.getByName(ipText.getText().toString());
+                InetAddress aimIP = InetAddress.getByName(aimIPString);
                 udpLink.launch(aimIP, udpPort, 0, StandardCharsets.UTF_8);
 //                rtcpLink.launch(aimIP, tcpPort, 100, StandardCharsets.UTF_8);
 
@@ -308,9 +313,9 @@ public class MainActivity extends AppCompatActivity {
      * 点击 connect 时的回调函数
      * */
     private final View.OnClickListener connectCallback = (arg0) -> {
+        //        Connecting
+        updateInfoText(R.string.text_info_connecting);
         connectClick();
-//        Connected
-        updateInfoText(R.string.text_info_connected);
     };
 
     /**
