@@ -276,6 +276,8 @@ public class MainActivity extends AppCompatActivity {
                 rLinkHeartBeat.startHeartbeat(2000, 3, 2000);
 //                启动远程开关
                 startForegroundService(MainActivity.this.sensorServiceIntent.setAction(SensorService.ACTION_START_FORE));
+//                Connected
+                updateInfoText(R.string.text_info_connected);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "connectClick:Exception", e);
                 updateInfoText(R.string.text_info_fail);
