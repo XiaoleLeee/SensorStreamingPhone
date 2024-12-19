@@ -182,10 +182,9 @@ public class MainActivity extends AppCompatActivity {
      * */
     private final VideoListen.VideoCallback videoCallback = new VideoListen.VideoCallback () {
         @Override
-        public void dealVideoData(byte[] data) {
-            VideoData videoData = new VideoData(referenceTime.getTime(), data);
+        public void dealVideoData(int width, int height, byte[] data) {
+            VideoData videoData = new VideoData(referenceTime.getTime(), width, height, data);
             String json = gson.toJson(videoData);
-            //Log.d("FromVideoListen", "数据大小: " + json.length() + "\n接收到视频数据"+ json);
 //            发送数据
             try {
                 Log.d("udpSend","进入udpSend 数据大小："+ json.length());

@@ -31,7 +31,12 @@ public class VideoListen extends Listen {
 
     // 视频回调接口
     public interface VideoCallback extends ListenCallback {
-        void dealVideoData(byte[] data);  // 处理视频数据
+        /**
+         * @param width 图像宽度
+         * @param height 图像高度
+         * @param data 视频数据
+         * */
+        void dealVideoData(int width, int height, byte[] data);  // 处理视频数据
     }
 
     private static final String LOG_TAG = "VideoListen";
@@ -41,9 +46,7 @@ public class VideoListen extends Listen {
     private ProcessCameraProvider cameraProvider;
     private CameraSelector cameraSelector;
     private ImageAnalysis imageAnalysis;
-    private int width=640,height=480 ;
-    private VideoCallback callback;              // 回调接口
-    private Thread readThread;                   // 持续监听线程
+    private VideoCallback callback;              // 回调接口     // 持续监听线程
     private final Object launchLock;
 
     // 构造函数
@@ -168,7 +171,7 @@ public class VideoListen extends Listen {
 
         if (this.callback == null)
             return;
-        this.callback.dealVideoData(compressedBytes);
+        this.callback.dealVideoData(compressedBitmap.getWidth(), compressedBitmap.getHeight(), compressedBytes);
     }
 
     // 启动读取线程
